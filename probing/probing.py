@@ -7,7 +7,7 @@
 # Python release: 3.6.0
 #
 # Date: 2020-02-18 11:05:08
-# Last modified: 2021-03-04 11:30:44
+# Last modified: 2022-09-22 21:22:35
 
 """
 Applying the probing process.
@@ -213,19 +213,19 @@ class Probe:
         q.build_heaps()
         m = len(q)
         logger.info('Start normal forward probing...')
-        iterator = tqdm(range(m))
-        for _ in iterator:
-            try:
-                pair = q.min()
-            except IndexError:
-                iterator.close()
-                return q
-            i, j = pair.i,  pair.j
-            newcluster = Cluster.merge(q.clusters[i], q.clusters[j])
-            t = self.space.overlapping(q, newcluster)
-            if not t:
-                q.remove_pair(i, j)
-                q.add(newcluster)
+        with tqdm(range(m)) as pbar:
+            while True:
+                try:
+                    pair = q.min()
+                except IndexError:
+                    return q
+                i, j = pair.i,  pair.j
+                newcluster = Cluster.merge(q.clusters[i], q.clusters[j])
+                t = self.space.overlapping(q, newcluster)
+                if not t:
+                    q.remove_pair(i, j)
+                    q.add(newcluster)
+                    pbar.update(1)
         return q
 
     # def _closest_set(self, q, test_vec):
